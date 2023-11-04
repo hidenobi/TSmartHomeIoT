@@ -27,6 +27,9 @@ FirebaseConfig config;
 // define led
 #define LED_2 2
 
+// define motion sensor
+#define MOTION_SENSOR 13
+
 // define key firebase
 #define MainKey "MainKey/"
 #define KeyTemperature "KeyTemperature"
@@ -38,12 +41,14 @@ void setup() {
   connectWifi();
   setUpFirebase();
   pinLed();
+  pinMotionSensor();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   readDataFromDHT11();
   getStatusOfListLed();
+  readMotionSensor();
   delay(10000);
 }
 void readDataFromDHT11() {
@@ -142,4 +147,15 @@ String getMainKey(String key) {
 
 void pinLed() {
   pinMode(LED_2, OUTPUT);
+}
+
+void pinMotionSensor() {
+  pinMode(MOTION_SENSOR, INPUT);
+}
+
+void readMotionSensor() {
+  int statusMotion = digitalRead(MOTION_SENSOR);
+  if (statusMotion == HIGH) {
+    Serial.println("Detector motion");
+  }
 }
