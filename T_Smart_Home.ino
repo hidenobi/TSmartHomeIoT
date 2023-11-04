@@ -1,6 +1,7 @@
 #include <DHT.h>
 #include <FirebaseESP32.h>
 #include <WiFi.h>
+#include <ArduinoJson.h>
 
 // define DHT
 #define DHTPIN 14
@@ -23,19 +24,27 @@ FirebaseConfig config;
 #define WIFI_SSID "Al+HNO3=>Al(NO3)3+NO+N2O+N2+H2O"
 #define WIFI_PASSWORD "726711113"
 
+// define led
+#define LED_2 2
+
 // define key firebase
+#define MainKey "MainKey/"
 #define KeyTemperature "KeyTemperature"
+#define KeyHumidity "KeyHumidity"
+#define KeyLed "KeyLed"
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   connectWifi();
   setUpFirebase();
+  pinLed();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   readDataFromDHT11();
-  delay(1000);
+  getStatusOfListLed();
+  delay(10000);
 }
 void readDataFromDHT11() {
   float humidity = dht.readHumidity();
@@ -47,6 +56,8 @@ void readDataFromDHT11() {
     Serial.println(humidityDescription + String(humidity));
     // send temperature
     sendData(temperature, KeyTemperature);
+    // send humidity
+    sendData(humidity, KeyHumidity);
   }
 }
 
@@ -85,10 +96,50 @@ void setUpFirebase() {
   firebaseData.setResponseSize(2048);
 }
 
-void sendData(float data, String key) {
-  if (Firebase.pushFloat(firebaseData, key, data)) {
-    Serial.println("send data successful");
+void getStatusOfListLed() {
+  String mainKey = getMainKey(KeyLed);
+  getStatusOfLed(mainKey, LED_2);
+}
+
+void getStatusOfLed(String mainKey, int id) {
+  String key = mainKey + "/" + String(id);
+  if (Firebase.getJSON(firebaseData, key)) {
+    // Success, then try to read the JSON payload value
+    FirebaseJson &json = firebaseData.jsonObject();
+    FirebaseJsonData data;
+    json.get(data, "/status");
+    bool status = false;
+    if (data.success) {
+      if (data.typeNum == FirebaseJson::JSON_BOOL) {
+        status = data.boolValue;
+      }
+    }
+    Serial.println("status: " + String(id) + String(status));
+    if (status == true) {
+      digitalWrite(id, HIGH);
+    } else {
+      digitalWrite(id, LOW);
+    }
   } else {
-    Serial.println("send data failure");
+    // Failed to get JSON data at defined database path, print out the error reason
+    Serial.println(firebaseData.errorReason());
   }
+}
+
+void sendData(float data, String key) {
+  String mainKey = getMainKey(key);
+  if (Firebase.setFloat(firebaseData, mainKey, data)) {
+    Serial.println("send " + key + " successful");
+  } else {
+    Serial.println("send " + key + " failure");
+  }
+}
+
+String getMainKey(String key) {
+  String mainKey = MainKey + key;
+  return mainKey;
+}
+
+void pinLed() {
+  pinMode(LED_2, OUTPUT);
 }
