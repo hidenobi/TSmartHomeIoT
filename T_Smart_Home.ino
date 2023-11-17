@@ -49,7 +49,7 @@ void loop() {
   readDataFromDHT11();
   getStatusOfListLed();
   readMotionSensor();
-  delay(10000);
+  delay(2000);
 }
 void readDataFromDHT11() {
   float humidity = dht.readHumidity();
