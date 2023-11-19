@@ -31,12 +31,16 @@ FirebaseConfig config;
 // define motion sensor
 #define MOTION_SENSOR 13
 
+// define rain sensor
+#define RAIN_SENSOR 15
+
 // define key firebase
 #define MainKey "MainKey/"
 #define KeyTemperature "KeyTemperature"
 #define KeyHumidity "KeyHumidity"
 #define KeyLed "KeyLed"
 #define KeyMotion "KeyMotion"
+#define KeyRain "KeyRain"
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -44,6 +48,7 @@ void setup() {
   setUpFirebase();
   pinLed();
   pinMotionSensor();
+  pinRainSensor();
 }
 
 void loop() {
@@ -51,6 +56,7 @@ void loop() {
   readDataFromDHT11();
   getStatusOfListLed();
   readMotionSensor();
+  readRainSensor();
   delay(2000);
 }
 void readDataFromDHT11() {
@@ -174,5 +180,19 @@ void readMotionSensor() {
     Serial.println("No Detector motion");
     // send motion
     sendData(false, KeyMotion);
+  }
+}
+
+void pinRainSensor() {
+  pinMode(RAIN_SENSOR, INPUT);
+}
+
+void readRainSensor() {
+  if (digitalRead(RAIN_SENSOR) == HIGH) {
+    sendData(true, KeyRain);
+    Serial.println("Detector rain");
+  } else {
+    sendData(false, KeyRain);
+    Serial.println("No detector rain");
   }
 }
