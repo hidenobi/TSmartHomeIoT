@@ -2,6 +2,7 @@
 #include <FirebaseESP32.h>
 #include <WiFi.h>
 #include <ArduinoJson.h>
+#include <time.h>
 
 // define DHT
 #define DHTPIN 14
@@ -35,6 +36,7 @@ FirebaseConfig config;
 #define KeyTemperature "KeyTemperature"
 #define KeyHumidity "KeyHumidity"
 #define KeyLed "KeyLed"
+#define KeyMotion "KeyMotion"
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -119,7 +121,7 @@ void getStatusOfLed(String mainKey, int id) {
         status = data.boolValue;
       }
     }
-    Serial.println("status: " + String(id) + String(status));
+    Serial.println("id: " + String(id) + " status: " + String(status));
     if (status == true) {
       digitalWrite(id, HIGH);
     } else {
@@ -134,6 +136,15 @@ void getStatusOfLed(String mainKey, int id) {
 void sendData(float data, String key) {
   String mainKey = getMainKey(key);
   if (Firebase.setFloat(firebaseData, mainKey, data)) {
+    Serial.println("send " + key + " successful");
+  } else {
+    Serial.println("send " + key + " failure");
+  }
+}
+
+void sendData(bool data, String key) {
+  String mainKey = getMainKey(key);
+  if (Firebase.setBool(firebaseData, mainKey, data)) {
     Serial.println("send " + key + " successful");
   } else {
     Serial.println("send " + key + " failure");
@@ -157,5 +168,11 @@ void readMotionSensor() {
   int statusMotion = digitalRead(MOTION_SENSOR);
   if (statusMotion == HIGH) {
     Serial.println("Detector motion");
+    // send motion
+    sendData(true, KeyMotion);
+  } else {
+    Serial.println("No Detector motion");
+    // send motion
+    sendData(false, KeyMotion);
   }
 }
