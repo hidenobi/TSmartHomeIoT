@@ -188,7 +188,7 @@ void pinRainSensor() {
 }
 
 void readRainSensor() {
-  if (digitalRead(RAIN_SENSOR) == HIGH) {
+  if (digitalRead(RAIN_SENSOR) == LOW) {
     sendData(true, KeyRain);
     Serial.println("Detector rain");
   } else {
