@@ -27,6 +27,7 @@ FirebaseConfig config;
 
 // define led
 #define LED_2 2
+#define LED_RAIN 4
 
 // define motion sensor
 #define MOTION_SENSOR 13
@@ -41,6 +42,7 @@ FirebaseConfig config;
 #define KeyLed "KeyLed"
 #define KeyMotion "KeyMotion"
 #define KeyRain "KeyRain"
+#define KeyLedRain "KeyLedRain"
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -164,6 +166,7 @@ String getMainKey(String key) {
 
 void pinLed() {
   pinMode(LED_2, OUTPUT);
+  pinMode(LED_RAIN, OUTPUT);
 }
 
 void pinMotionSensor() {
@@ -191,8 +194,17 @@ void readRainSensor() {
   if (digitalRead(RAIN_SENSOR) == LOW) {
     sendData(true, KeyRain);
     Serial.println("Detector rain");
+    digitalWrite(LED_RAIN, HIGH);
   } else {
     sendData(false, KeyRain);
     Serial.println("No detector rain");
+    bool statusLedRain = false;
+    Firebase.getBool(firebaseData, getMainKey(KeyLedRain), &statusLedRain);
+    Serial.println("Status Led Rain: " + String(statusLedRain));
+    if (statusLedRain == false) {
+      digitalWrite(LED_RAIN, LOW);
+    } else {
+      digitalWrite(LED_RAIN, HIGH);
+    }
   }
 }
