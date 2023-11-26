@@ -195,6 +195,7 @@ void readRainSensor() {
     sendData(true, KeyRain);
     Serial.println("Detector rain");
     digitalWrite(LED_RAIN, HIGH);
+    sendData(true, KeyLedRain);
   } else {
     sendData(false, KeyRain);
     Serial.println("No detector rain");
